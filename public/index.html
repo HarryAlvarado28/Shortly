@@ -3,8 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <title>Shortly - Acortador de URLs</title>
-  <link rel="icon" href="shortly.ico" type="image/x-icon">
+  <!-- 🔍 Meta para SEO -->
+  <meta name="description" content="Shortly es un acortador de URLs simple y rápido. Pega tu enlace largo y obtén una versión corta para compartir.">
+  <!-- ⚖️ Meta de copyright -->
+  <meta name="copyright" content="© 2025 HarryLab28. Todos los derechos reservados.">
+  <link rel="icon" href="shortly.png" type="image/png">
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
       font-family: Arial, sans-serif;
       max-width: 500px;
@@ -22,17 +29,18 @@
       background: #f1f1f1;
       padding: 10px;
       border-radius: 8px;
-      word-break: break-all;
+      word-break: break-word;
     }
-  </style>
+  </style>  
 </head>
 <body>
-  <h1>🔗 Shortly</h1>
-  <p>Ingresa una URL larga y obtén un enlace corto:</p>
-  <input type="text" id="longUrl" placeholder="https://example.com/tu-url-larga" />
-  <button onclick="shortenUrl()">Acortar</button>
-  <div class="result" id="shortUrl"></div>
-
+  <div>
+    <h1>🔗 Shortly</h1>
+    <p>Ingresa una URL larga y obtén un enlace corto:</p>
+    <input type="text" id="longUrl" placeholder="https://example.com/tu-url-larga" />
+    <button onclick="shortenUrl()">Acortar</button>
+    <div class="result" id="shortUrl"></div>
+  </div>
   <script>
     async function shortenUrl() {
       const longUrl = document.getElementById("longUrl").value;
