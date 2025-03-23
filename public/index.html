@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Shortly - Acortador de URLs</title>
+  <link rel="icon" href="shortly.ico" type="image/x-icon">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 60px auto;
+      text-align: center;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px 0;
+      width: 100%;
+    }
+    .result {
+      margin-top: 20px;
+      background: #f1f1f1;
+      padding: 10px;
+      border-radius: 8px;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔗 Shortly</h1>
+  <p>Ingresa una URL larga y obtén un enlace corto:</p>
+  <input type="text" id="longUrl" placeholder="https://example.com/tu-url-larga" />
+  <button onclick="shortenUrl()">Acortar</button>
+  <div class="result" id="shortUrl"></div>
+
+  <script>
+    async function shortenUrl() {
+      const longUrl = document.getElementById("longUrl").value;
+      const res = await fetch("/shorten", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: longUrl })
+      });
+      const data = await res.json();
+      const shortDiv = document.getElementById("shortUrl");
+      if (res.ok) {
+        shortDiv.innerHTML = `
+          <p><strong>URL corta:</strong></p>
+          <a href="${data.short_url}" target="_blank">${data.short_url}</a>
+        `;
+      } else {
+        shortDiv.innerHTML = `<p style="color:red;">Ocurrió un error. Verifica la URL.</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
