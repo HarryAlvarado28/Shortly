@@ -29,7 +29,9 @@ func handleShorten(w http.ResponseWriter, r *http.Request) {
 	id := generateID(6)
 	saveURL(id, req.URL)
 
-	resp := ShortenResponse{ShortURL: "http://localhost:8080/" + id}
+	baseURL := getEnv("BASE_URL", "http://localhost:8080")
+	resp := ShortenResponse{ShortURL: baseURL + "/" + id}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
