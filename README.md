@@ -1,2 +1,29 @@
-# Shortly
-🔗 Shortly es una aplicación que permite transformar enlaces largos en URLs cortas fáciles de compartir. Redirige automáticamente a la dirección original cuando visitas el enlace corto. Ideal para quienes buscan una herramienta rápida, ligera y útil para gestionar enlaces.
+# Shortly 🔗
+
+Acorta URLs largas en versiones cortas y fáciles de compartir.  
+Redirige automáticamente al enlace original cuando visitas la URL generada.
+
+---
+
+## 🚀 Funcionalidades
+
+- ✅ Acortamiento rápido de enlaces
+- 🔁 Redirección automática
+- 🧠 Almacenamiento en memoria
+- 🐳 Despliegue listo con Docker
+
+---
+
+## 📦 Instalación local
+
+### 🔧 Requisitos
+
+- Go 1.18 o superior
+- (Opcional) Docker
+
+### 🛠️ Clonar el repositorio
+
+```bash
+git clone https://github.com/HarryAlvarado28/shortly.git
+cd shortly
+go run main.go
