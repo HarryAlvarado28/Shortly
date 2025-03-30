@@ -1,5 +1,5 @@
 # Usar una imagen de Go ligera
-FROM golang:1.21-alpine
+FROM golang:1.23-alpine
 
 # Establecer directorio de trabajo dentro del contenedor
 WORKDIR /app
