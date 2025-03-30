@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	"shortly/internal/models"
+	"shortly/internal/storage"
 )
 
 type ShortenRequest struct {
@@ -20,17 +23,24 @@ func handleShorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req ShortenRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || !strings.HasPrefix(req.URL, "http") {
-		http.Error(w, "URL inválida", http.StatusBadRequest)
+	var req struct {
+		URL string `json:"url"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "JSON inválido", http.StatusBadRequest)
 		return
 	}
 
-	id := generateID(6)
-	saveURL(id, req.URL)
+	shortID := generateID(6)
+
+	err := storage.SaveURL(shortID, req.URL)
+	if err != nil {
+		http.Error(w, "Error al guardar en DB", http.StatusInternalServerError)
+		return
+	}
 
 	baseURL := getEnv("BASE_URL", "http://localhost:8080")
-	resp := ShortenResponse{ShortURL: baseURL + "/" + id}
+	resp := map[string]string{"short_url": baseURL + "/" + shortID}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
@@ -38,10 +48,39 @@ func handleShorten(w http.ResponseWriter, r *http.Request) {
 
 func handleRedirect(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/")
-	original := getURL(id)
-	if original == "" {
+
+	var url models.URL
+	result := storage.DB.First(&url, "short_id = ?", id)
+	if result.Error != nil {
 		http.NotFound(w, r)
 		return
 	}
-	http.Redirect(w, r, original, http.StatusFound)
+
+	// Incrementar contador de clics
+	url.Clicks++
+	storage.DB.Save(&url)
+
+	http.Redirect(w, r, url.OriginalURL, http.StatusFound)
+}
+
+func handleStats(w http.ResponseWriter, r *http.Request) {
+	id := strings.TrimPrefix(r.URL.Path, "/stats/")
+
+	var url models.URL
+	result := storage.DB.First(&url, "short_id = ?", id)
+	if result.Error != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	resp := map[string]interface{}{
+		"short_id":     url.ShortID,
+		"original_url": url.OriginalURL,
+		"clicks":       url.Clicks,
+		"created_at":   url.CreatedAt,
+		"expires_at":   url.ExpiresAt,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
 }
