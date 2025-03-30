@@ -24,7 +24,7 @@ func InitDB() {
 		log.Fatalf("Error al conectar a PostgreSQL: %v", err)
 	}
 
-	err = DB.AutoMigrate(&models.URL{})
+	err = DB.AutoMigrate(&models.User{}, &models.URL{})
 	if err != nil {
 		log.Fatal("Error al migrar modelo:", err)
 	}

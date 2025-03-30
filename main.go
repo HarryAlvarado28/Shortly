@@ -8,6 +8,8 @@ import (
 
 	"github.com/joho/godotenv"
 
+	"shortly/internal/handlers"
+	"shortly/internal/middleware"
 	"shortly/internal/storage"
 )
 
@@ -15,8 +17,13 @@ func main() {
 	_ = godotenv.Load() // Cargar .env local
 	storage.InitDB()
 
-	http.HandleFunc("/stats/", handleStats)
-	http.HandleFunc("/shorten", handleShorten)
+	http.HandleFunc("/register", handlers.RegisterHandler)
+	http.HandleFunc("/login", handlers.LoginHandler)
+
+	http.HandleFunc("/stats/", middleware.ValidateJWT(handlers.HandleStats))
+	http.HandleFunc("/my/urls", middleware.ValidateJWT(handlers.HandleMyUrls))
+	http.HandleFunc("/shorten", middleware.ValidateJWT(handlers.HandleShorten))
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" {
 			http.ServeFile(w, r, "public/index.html")
@@ -31,7 +38,7 @@ func main() {
 		}
 
 		// Si no es un archivo estático, asumir que es un ID y redirigir
-		handleRedirect(w, r)
+		handlers.HandleRedirect(w, r)
 	})
 
 	log.Println("Servidor escuchando en http://localhost:8080")

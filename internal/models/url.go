@@ -9,4 +9,5 @@ type URL struct {
 	Clicks      int
 	CreatedAt   time.Time
 	ExpiresAt   *time.Time
+	UserID      *uint // ✅ Clave foránea que vincula al usuario
 }
