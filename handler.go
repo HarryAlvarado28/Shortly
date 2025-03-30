@@ -31,7 +31,7 @@ func handleShorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortID := generateID(6)
+	shortID := GenerateID(6)
 
 	err := storage.SaveURL(shortID, req.URL)
 	if err != nil {
@@ -39,7 +39,7 @@ func handleShorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	baseURL := getEnv("BASE_URL", "http://localhost:8080")
+	baseURL := GetEnv("BASE_URL", "http://localhost:8080")
 	resp := map[string]string{"short_url": baseURL + "/" + shortID}
 
 	w.Header().Set("Content-Type", "application/json")
