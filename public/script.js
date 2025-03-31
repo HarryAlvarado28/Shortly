@@ -33,8 +33,6 @@ async function shortenUrl() {
   const token = localStorage.getItem('token');
   const headers = { 'Content-Type': 'application/json' };
 
-  console.log('shortenUrl Token: ', token);
-
   if (token) {
     headers['Authorization'] = `Bearer-${token}`;
   }
