@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"time"
 
 	"shortly/internal/middleware"
 	"shortly/internal/models"
@@ -33,7 +34,7 @@ func HandleShorten(w http.ResponseWriter, r *http.Request) {
 
 	shortID := utils.GenerateID(6)
 
-	// Verifica si hay un usuario autenticado en el contexto
+	// Detectar si hay sesión
 	var userID *uint = nil
 	if uidVal := r.Context().Value(middleware.UserIDKey); uidVal != nil {
 		uid := uidVal.(uint)
@@ -46,6 +47,13 @@ func HandleShorten(w http.ResponseWriter, r *http.Request) {
 		UserID:      userID,
 	}
 
+	// Si es anónimo, asignar expiración de 15 días
+	if userID == nil {
+		exp := time.Now().AddDate(0, 0, 15)
+		url.ExpiresAt = &exp
+	}
+
+	// Guardar en DB
 	if err := storage.DB.Create(&url).Error; err != nil {
 		http.Error(w, "Error al guardar en DB", http.StatusInternalServerError)
 		return
@@ -68,7 +76,13 @@ func HandleRedirect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Incrementar contador de clics
+	// Si expiró, denegar
+	if url.ExpiresAt != nil && url.ExpiresAt.Before(time.Now()) {
+		http.Error(w, "Este enlace ha expirado", http.StatusGone)
+		return
+	}
+
+	// Incrementar contador
 	url.Clicks++
 	storage.DB.Save(&url)
 

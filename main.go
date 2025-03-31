@@ -19,6 +19,7 @@ func main() {
 
 	http.HandleFunc("/register", handlers.RegisterHandler)
 	http.HandleFunc("/login", handlers.LoginHandler)
+	http.HandleFunc("/anon", handlers.AnonymousSessionHandler)
 
 	http.HandleFunc("/stats/", middleware.ValidateJWT(handlers.HandleStats))
 	http.HandleFunc("/my/urls", middleware.ValidateJWT(handlers.HandleMyUrls))

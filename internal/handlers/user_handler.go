@@ -105,3 +105,33 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		"token": token,
 	})
 }
+
+func AnonymousSessionHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	user := models.User{
+		Username:    "anon_" + utils.GenerateID(8),
+		Email:       utils.GenerateID(10) + "@anon.local",
+		IsAnonymous: true,
+		CreatedAt:   time.Now(),
+	}
+
+	if err := storage.DB.Create(&user).Error; err != nil {
+		http.Error(w, "Error al crear usuario anónimo", http.StatusInternalServerError)
+		return
+	}
+
+	token, err := utils.GenerateJWT(user.ID)
+	if err != nil {
+		http.Error(w, "Error al generar token", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"token": token,
+	})
+}

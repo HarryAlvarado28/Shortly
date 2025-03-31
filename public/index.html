@@ -6,7 +6,7 @@
     <title>Shortly - Acortador de URLs</title>
     <meta
       name="description"
-      content="Shortly es un acortador de URLs simple y rápido. Pega tu enlace largo y obtén una versión corta para compartir."
+      content="Shortly es un acortador de URLs simple y rápido. Pega tu enlace largo y obtén un enlace corto para compartir."
     />
     <meta
       name="copyright"
@@ -14,6 +14,68 @@
     />
     <link rel="icon" href="shortly.png" type="image/png" />
     <link rel="stylesheet" href="styles.css" />
+    <script>
+      window.addEventListener('DOMContentLoaded', async () => {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+          try {
+            const res = await fetch('/anon', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.token) {
+              localStorage.setItem('token', data.token);
+              console.log('[shortly] Sesión anónima iniciada');
+              document.getElementById('anonWarning').style.display = 'block';
+            } else {
+              console.error('Respuesta inesperada de /anon:', data);
+            }
+          } catch (error) {
+            console.error('No se pudo iniciar sesión anónima:', error);
+          }
+        } else {
+          // Si ya tiene sesión
+          document.getElementById('anonWarning').style.display = 'none';
+        }
+      });
+
+      // 2. Acortar URL con el token
+      async function shortenUrl() {
+        const longUrl = document.getElementById('longUrl').value;
+        const token = localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+
+        console.log('shortenUrl Token: ', token);
+
+        if (token) {
+          headers['Authorization'] = `Bearer-${token}`;
+        }
+
+        const res = await fetch('/shorten', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ url: longUrl }),
+        });
+
+        const data = await res.json();
+        const shortDiv = document.getElementById('shortUrl');
+
+        if (res.ok) {
+          shortDiv.innerHTML = `
+      <p><strong>URL corta:</strong></p>
+      <a href="${data.short_url}" target="_blank">${data.short_url}</a>
+    `;
+        } else {
+          shortDiv.innerHTML = `<p style="color:red;">Ocurrió un error. Verifica la URL.</p>`;
+        }
+      }
+    </script>
   </head>
   <body>
     <div class="container">
@@ -25,8 +87,14 @@
         placeholder="https://example.com/tu-url-larga"
       />
       <button onclick="shortenUrl()">Acortar</button>
+      <p
+        id="anonWarning"
+        style="font-size: 0.9em; color: gray; margin-top: 5px"
+      >
+        Las URLs acortadas sin iniciar sesión expirarán automáticamente en 15
+        días.
+      </p>
       <div class="result" id="shortUrl"></div>
     </div>
-    <script src="script.js"></script>
   </body>
 </html>
