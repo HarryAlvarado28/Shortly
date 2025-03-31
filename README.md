@@ -11,7 +11,9 @@ Ideal para desarrolladores que buscan gestionar enlaces personales de forma segu
 - 🔁 Redirección automática
 - 👤 Registro e inicio de sesión con JWT
 - 🔐 Asociación de URLs por usuario
+- ✨ Sesión anónima automática con JWT
 - 📊 Estadísticas de uso (clics)
+- ⏳ Expiración de enlaces anónimos (15 días)
 - 🧠 Almacenamiento en PostgreSQL
 - 🐳 Despliegue listo con Docker
 
@@ -26,8 +28,6 @@ Ideal para desarrolladores que buscan gestionar enlaces personales de forma segu
 ---
 
 ## ⚙️ Variables de entorno (.env)
-
-Crea un archivo `.env` en la raíz con el siguiente contenido:
 
 ```env
 BASE_URL=http://localhost:8080
@@ -77,7 +77,11 @@ curl -X POST http://localhost:8080/login \
   -d '{"email": "harry@example.com", "password": "12345678"}'
 ```
 
-✅ Devuelve un token JWT para usar en las siguientes rutas
+#### Sesión anónima
+
+```bash
+curl -X POST http://localhost:8080/anon
+```
 
 ---
 
@@ -85,7 +89,7 @@ curl -X POST http://localhost:8080/login \
 
 ```bash
 curl -X POST http://localhost:8080/shorten \
-  -H "Authorization: Bearer-TU_TOKEN" \
+  -H "Authorization: Bearer TU_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://example.com"}'
 ```
@@ -96,7 +100,7 @@ curl -X POST http://localhost:8080/shorten \
 
 ```bash
 curl http://localhost:8080/my/urls \
-  -H "Authorization: Bearer-TU_TOKEN"
+  -H "Authorization: Bearer TU_TOKEN"
 ```
 
 ---
@@ -119,11 +123,40 @@ curl http://localhost:8080/stats/abc123
 
 ## 🧪 Pruebas y depuración
 
-El sistema de variables usa `GetEnv`, por lo que verás logs como:
+El sistema de variables usa `GetEnvCached`, por lo que verás logs como:
 
 ```
 [ENV] JWT_SECRET = super_secreta (desde jwt.go:25 → utils.GenerateJWT)
 ```
+
+---
+
+## 🧭 Roadmap de próximas funcionalidades
+
+Estas son algunas ideas futuras para seguir mejorando Shortly:
+
+- 🔑 Recuperación de contraseña por email
+- 📁 Historial de URLs creadas por el usuario
+- 🔒 Eliminación de enlaces creados (para usuarios autenticados)
+- 📊 Estadísticas avanzadas (clics por día, geolocalización, referer)
+- 🧾 Vista previa de enlaces antes de redirigir
+- 🎨 Diseño visual con temas claros/oscuro
+- 🌍 Localización (multi-idioma)
+- 🧪 Tests automatizados y CI/CD
+
+¿Tienes una idea o sugerencia? ¡Contribuye al proyecto o abre un issue! 🚀
+
+---
+
+## 🔖 Release actual: `v1.1.0`
+
+Versión estable con:
+- Soporte para usuarios anónimos automáticos con JWT
+- Asociación de URLs a usuarios (registrados o anónimos)
+- Frontend limpio y funcional en HTML + JS
+- Expiración automática de enlaces anónimos a los 15 días
+- Backend con Go + PostgreSQL
+- Despliegue sencillo con Docker y Render
 
 ---
 
