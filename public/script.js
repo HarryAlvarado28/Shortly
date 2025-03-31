@@ -34,7 +34,7 @@ async function shortenUrl() {
   const headers = { 'Content-Type': 'application/json' };
 
   if (token) {
-    headers['Authorization'] = `Bearer-${token}`;
+    headers['Authorization'] = `Bearer ${token}`;
   }
 
   const res = await fetch('/shorten', {

@@ -57,7 +57,7 @@ Este documento describe los endpoints disponibles en la API del proyecto Shortly
 
 **Header:**
 ```
-Authorization: Bearer-TU_TOKEN
+Authorization: Bearer TU_TOKEN
 ```
 
 **Body JSON:**
@@ -82,7 +82,7 @@ Authorization: Bearer-TU_TOKEN
 
 **Header:**
 ```
-Authorization: Bearer-TU_TOKEN
+Authorization: Bearer TU_TOKEN
 ```
 
 **Respuesta:**
@@ -142,7 +142,7 @@ GET /abc123 → 302 Found → https://example.com
 ## 🔐 Seguridad
 
 - El token JWT tiene una validez de 72 horas.
-- Todas las rutas protegidas requieren el header: `Authorization: Bearer-TU_TOKEN`
+- Todas las rutas protegidas requieren el header: `Authorization: Bearer TU_TOKEN`
 
 ---
 
