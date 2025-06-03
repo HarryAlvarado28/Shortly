@@ -34,7 +34,6 @@ func HandleShorten(w http.ResponseWriter, r *http.Request) {
 
 	shortID := utils.GenerateID(6)
 
-	// Detectar si hay sesión
 	var userID *uint = nil
 	if uidVal := r.Context().Value(middleware.UserIDKey); uidVal != nil {
 		uid := uidVal.(uint)
@@ -47,15 +46,14 @@ func HandleShorten(w http.ResponseWriter, r *http.Request) {
 		UserID:      userID,
 	}
 
-	// Si es anónimo, asignar expiración de 15 días
 	if userID == nil {
 		exp := time.Now().AddDate(0, 0, 15)
 		url.ExpiresAt = &exp
 	}
 
-	// Guardar en DB
-	if err := storage.DB.Create(&url).Error; err != nil {
-		http.Error(w, "Error al guardar en DB", http.StatusInternalServerError)
+	// ✅ Usa SaveURL que funciona con DB o memoria
+	if err := storage.SaveURL(url.ShortID, url.OriginalURL); err != nil {
+		http.Error(w, "Error al guardar el enlace", http.StatusInternalServerError)
 		return
 	}
 
@@ -69,28 +67,37 @@ func HandleShorten(w http.ResponseWriter, r *http.Request) {
 func HandleRedirect(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/")
 
-	var url models.URL
-	result := storage.DB.First(&url, "short_id = ?", id)
-	if result.Error != nil {
+	// ✅ Usa GetOriginalURL compatible con DB o memoria
+	original, err := storage.GetOriginalURL(id)
+	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
 
-	// Si expiró, denegar
-	if url.ExpiresAt != nil && url.ExpiresAt.Before(time.Now()) {
-		http.Error(w, "Este enlace ha expirado", http.StatusGone)
-		return
+	// ⚠ Aquí no se puede verificar expiración ni aumentar clics en memoria (solo en DB)
+	if storage.UseDB {
+		var url models.URL
+		result := storage.DB.First(&url, "short_id = ?", id)
+		if result.Error == nil {
+			if url.ExpiresAt != nil && url.ExpiresAt.Before(time.Now()) {
+				http.Error(w, "Este enlace ha expirado", http.StatusGone)
+				return
+			}
+			url.Clicks++
+			storage.DB.Save(&url)
+		}
 	}
 
-	// Incrementar contador
-	url.Clicks++
-	storage.DB.Save(&url)
-
-	http.Redirect(w, r, url.OriginalURL, http.StatusFound)
+	http.Redirect(w, r, original, http.StatusFound)
 }
 
 func HandleStats(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/stats/")
+
+	if !storage.UseDB {
+		http.Error(w, "Estadísticas no disponibles en modo memoria", http.StatusNotImplemented)
+		return
+	}
 
 	var url models.URL
 	result := storage.DB.First(&url, "short_id = ?", id)
@@ -114,6 +121,11 @@ func HandleStats(w http.ResponseWriter, r *http.Request) {
 func HandleMyUrls(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if !storage.UseDB {
+		http.Error(w, "Función no disponible en modo memoria", http.StatusNotImplemented)
 		return
 	}
 

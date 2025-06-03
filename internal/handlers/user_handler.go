@@ -51,12 +51,12 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		CreatedAt: time.Now(),
 	}
 
-	if err := storage.DB.Create(&user).Error; err != nil {
+	// ✅ NUEVO: usar función SaveUser que gestiona DB o memoria
+	if err := storage.SaveUser(user); err != nil {
 		http.Error(w, "Error al registrar usuario", http.StatusInternalServerError)
 		return
 	}
 
-	// Éxito
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{
 		"message": "Usuario registrado con éxito",
@@ -79,10 +79,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Buscar usuario por email
-	var user models.User
-	result := storage.DB.First(&user, "email = ?", input.Email)
-	if result.Error != nil {
+	// ✅ NUEVO: usar función FindUserByEmail que maneja DB o memoria
+	user, err := storage.FindUserByEmail(input.Email)
+	if err != nil {
 		http.Error(w, "Usuario no encontrado", http.StatusUnauthorized)
 		return
 	}
@@ -100,7 +99,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Éxito
 	json.NewEncoder(w).Encode(map[string]string{
 		"token": token,
 	})
@@ -119,7 +117,8 @@ func AnonymousSessionHandler(w http.ResponseWriter, r *http.Request) {
 		CreatedAt:   time.Now(),
 	}
 
-	if err := storage.DB.Create(&user).Error; err != nil {
+	// ✅ NUEVO: usar SaveUser también para usuarios anónimos
+	if err := storage.SaveUser(user); err != nil {
 		http.Error(w, "Error al crear usuario anónimo", http.StatusInternalServerError)
 		return
 	}
